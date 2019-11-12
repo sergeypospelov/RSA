@@ -1,9 +1,3 @@
-
-"""Шифрование и дешифрование по RSA.
-Проектное домашнее задание по алгебре,
-бакалавриат «Современное программирование»
-факультета Математики и компьютерных наук СПбГУ"""
-
 import random
 import math
 
@@ -60,7 +54,7 @@ def gen_primes():
     small_primes = gen_small_primes(128)
 
     while True:
-        primes = [2] + random.sample(small_primes, k=10)
+        primes = [2] + random.sample(small_primes[2:len(small_primes)], random.randint(4, 20))
 
         n = 1
         for p in primes:
@@ -75,6 +69,41 @@ def gen_primes():
         if res > 0:
             return (n, primes, res)
 
+def miller_rabin_iter(n, a, odd, nmo, pot):
+    x = fast_pow_mod(n, a, odd)
+    if x == nmo or x == 1:
+        return True
+    for i in range(1, pot):
+        x = fast_pow_mod(n, x, 2);
+        if x == nmo:
+            return True
+        if x == 1:
+            return False
+    return False
+
+
+def miller_rabin_test(n):
+    if n % 2 == 0:
+        return n == 2
+
+    nmo = n - 1
+    odd = nmo
+    pot = 0
+
+    while odd % 2 == 0:
+        odd >>= 1
+        pot += 1
+
+    k = math.ceil(math.log(n)) + 10
+
+    for i in range(k):
+        a = random.randint(2, n - 1)
+
+        if miller_rabin_iter(n, a, odd, nmo, pot) == False:
+            return False
+
+    return True
+
 
 def gen_pseudoprime():
     """Генерация псевдопростых на основе теста Миллера—Рабина.
@@ -82,9 +111,28 @@ def gen_pseudoprime():
     Возвращает целое число n в диапазоне от 2^123 до 2^128,
     псевдопростое по основание не менее чем log(n) чисел."""
 
+    l = 2 ** 123
+    r = 2 ** 128
 
+    n = random.randint(l, r)
+    while miller_rabin_test(n) == False:
+        n = random.randint(l, r)
 
-    pass
+    return n
+
+def ex_gcd(a, b):
+    s1, s2 = 1, 0
+    t1, t2 = 0, 1
+    while b != 0:
+        q = a // b
+        r = a % b
+        a, b = b, r
+        s = s1 - q * s2
+        s1, s2 = s2, s
+        t = t1 - q * t2
+        t1, t2 = t2, t
+
+    return (s1, t1)
 
 
 def rsa_gen_keys():
@@ -95,7 +143,23 @@ def rsa_gen_keys():
     p, q — сильно псевдопростые по не менее чем log(q) основаниям;
     e — целое число, меньшее n и взаимно простое с phi(n), значением функции Эйлера от n,
     d — целое число, обратное к e по модулю phi(n)."""
-    pass
+
+    p = gen_pseudoprime()
+    q = gen_pseudoprime()
+    while p == q:
+        q = gen_pseudoprime()
+
+    n = p * q
+    phi = (p - 1) * (q - 1)
+
+    e = random.randint(1, n - 1)
+    while math.gcd(e, phi) != 1:
+        e = random.randint(1, n - 1)
+
+    d = ex_gcd(e, phi)[0]
+    d %= phi
+    
+    return (n, p, q, e, d)
 
 
 def rsa_encrypt(n, e, t):
@@ -103,7 +167,8 @@ def rsa_encrypt(n, e, t):
 
     На входе открытый ключ n, e и сообщение t.
     Возвращает целое число, равное t^e mod n."""
-    pass
+
+    return fast_pow_mod(n, t, e)
 
 
 def rsa_decrypt(n, d, s):
@@ -111,9 +176,8 @@ def rsa_decrypt(n, d, s):
 
     На входе закрытый ключ n, d и зашифрованное сообщение s.
     Возвращает целое число, равное s^d mod n."""
-    pass
 
-
+    return fast_pow_mod(n, s, d)
 
 
 def prime_factorization_pollard(n, cutoff):
@@ -125,4 +189,4 @@ def prime_factorization_pollard(n, cutoff):
     pass
 
 if __name__ == "__main__":
-    print(gen_primes())
+    print(gen_pseudoprime())
