@@ -158,7 +158,7 @@ def rsa_gen_keys():
 
     d = ex_gcd(e, phi)[0]
     d %= phi
-    
+
     return (n, p, q, e, d)
 
 
@@ -187,6 +187,3 @@ def prime_factorization_pollard(n, cutoff):
     и константа отсечения cutoff ~ log(n).
     Возвращает нетривиальный делитель p (или 1, если найти такой не удалось)."""
     pass
-
-if __name__ == "__main__":
-    print(gen_pseudoprime())
