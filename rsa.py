@@ -52,13 +52,11 @@ def gen_primes():
     min_n = 2 ** 123
 
     small_primes = gen_small_primes(128)
+    primes = random.sample(small_primes[2:len(small_primes)], random.randint(4, 20))
 
     while True:
-        primes = [2] + random.sample(small_primes[2:len(small_primes)], random.randint(4, 20))
 
-        n = 1
-        for p in primes:
-            n *= p
+        n = 2
 
         while n <= min_n:
             n *= random.choice(primes)
